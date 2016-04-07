@@ -12,49 +12,58 @@ def worker_download(downloadurl, savefile, from_, to):
     size = to - from_
     print ('size: ' + str(size))
 
-    req = urllib2.Request(downloadurl)
-    req.add_header('Range', 'bytes=' + str(from_) + '-' + str(to - 1))
+    req = urllib2.Request(downloadurl) 
+    header_range = 'bytes=' + str(from_) + '-' + str(to - 1)
+    req.add_header('Range', header_range)
+    print('header range: ' + header_range)
+
     netfo = urllib2.urlopen(req)
     print('worker connected') 
     sys.stdout.flush()
+
     localfo = open(savefile, "rb+")
     localfo.seek(from_)
-    buf = '' 
-    while True:
-        BUF_SZ = 4096
-        buf = netfo.read(min(BUF_SZ, size))
-        size -= len(buf)
-        print('size remaining: ' + str(size))
-        sys.stdout.flush()
-        localfo.write(buf)
-        if size <= 0:
-            break;
+    print('seek to position ' + str(from_))
+    buf = netfo.read(size)
+    localfo.write(buf)
+
     netfo.close()
     localfo.close()
     print('worker finished')
     sys.stdout.flush()
 
 
+def head_response(downloadurl, **headers):
+    request = urllib2.Request(downloadurl, headers = headers)
+    request.get_method = lambda: 'HEAD'
+    r = urllib2.urlopen(request)
+    return r
+
 def get_remote_filesize(downloadurl):
-    netfo = urllib2.urlopen(downloadurl)
+    netfo = head_response(downloadurl)
     return netfo.info().getheader('Content-Length')
 
 
+def is_partial_supp(downloadurl):
+    fo = head_response(downloadurl, Range = 'bytes=3-5')
+    return fo.getcode() == 206
+
+
 #downloadurl = raw_input("Download Url: \n")
-downloadurl = "http://de.apachehaus.com/downloads/httpd-2.4.18-x64-vc11-r3.zip?"
+#downloadurl = "http://de.apachehaus.com/downloads/httpd-2.4.18-x64-vc11-r3.zip?"
+downloadurl = "http://dlsw.baidu.com/sw-search-sp/soft/ca/13442/Thunder_dl_7.9.43.5054.1456898740.exe?"
+
 print('download from: ' + downloadurl)
 
 savefile = os.path.join(SAVEPATH, os.path.basename(downloadurl)[:-1])
 print('save to: ' + savefile)
 
 
-N_THREADS = 20
+N_THREADS = 30
 
 print('number of threads: ' + str(N_THREADS))
 
-#filesize = int(get_remote_filesize(downloadurl))
-
-filesize = 9253683
+filesize = int(get_remote_filesize(downloadurl))
 
 with open(savefile, 'wb') as fo:
     fo.seek(filesize - 1)
@@ -76,11 +85,17 @@ sys.stdout.flush()
 
 threads = []
 
+# check if partial content is supported
+if not is_partial_supp(downloadurl):
+    print 'partial content is not supported, quiting ...'
+    exit(0)
+
 for i in range(N_THREADS):
     from_ = i * filesizeeach
     to = i * filesizeeach + filesizeeach
     if i == N_THREADS - 1:
         to = i * filesizeeach + lastfilesize
+    
     thread = threading.Thread(target=worker_download, args=(downloadurl, savefile, from_, to))
     thread.start()
     threads.append(thread)
