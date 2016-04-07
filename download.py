@@ -53,13 +53,26 @@ def is_partial_supp(downloadurl):
 #downloadurl = "http://de.apachehaus.com/downloads/httpd-2.4.18-x64-vc11-r3.zip?"
 downloadurl = "http://dlsw.baidu.com/sw-search-sp/soft/ca/13442/Thunder_dl_7.9.43.5054.1456898740.exe?"
 
+downloadurl = "http://tenet.dl.sourceforge.net/project/mingw-w64/mingw-w64/mingw-w64-release/mingw-w64-v4.0.6.zip?"
+
+
+downloadurl="https://atlas.hashicorp.com/laravel/boxes/homestead/versions/0.4.2/providers/virtualbox.box?"
+
+
 print('download from: ' + downloadurl)
 
 savefile = os.path.join(SAVEPATH, os.path.basename(downloadurl)[:-1])
 print('save to: ' + savefile)
 
 
-N_THREADS = 30
+# check if partial content is supported
+if not is_partial_supp(downloadurl):
+    print 'partial content is not supported, quiting ...'
+    exit(0)
+
+    
+
+N_THREADS = 20
 
 print('number of threads: ' + str(N_THREADS))
 
@@ -85,10 +98,7 @@ sys.stdout.flush()
 
 threads = []
 
-# check if partial content is supported
-if not is_partial_supp(downloadurl):
-    print 'partial content is not supported, quiting ...'
-    exit(0)
+
 
 for i in range(N_THREADS):
     from_ = i * filesizeeach
