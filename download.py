@@ -15,9 +15,9 @@ lock = threading.Lock()
 
 
 def worker_progress():
+    print ('worker, total_sz = ' + str(total_sz));
     while downloaded_sz != total_sz:
-        print ('downloaded size: ' + str(downloaded_sz), 'total size: ' + str(total_sz))
-        print (str(float(downloaded_sz) / total_sz * 100) + '%')
+        print ('downloaded size: ' + str(downloaded_sz), 'total size: ' + str(total_sz), str(float(downloaded_sz) / total_sz * 100) + '%')
         sys.stdout.flush()
         time.sleep(1)
 
@@ -55,7 +55,6 @@ def worker_download(downloadurl, savefile, from_, to):
         localfo.write(buf)
         throw_bytes(len(buf))
         size -= len(buf)
-        sys.stdout.flush()
 
     netfo.close()
     localfo.close()
@@ -80,13 +79,13 @@ def is_partial_supp(downloadurl):
 
 
 #downloadurl = raw_input("Download Url: \n")
-downloadurl = "http://de.apachehaus.com/downloads/httpd-2.4.18-x64-vc11-r3.zip?"
+#downloadurl = "http://de.apachehaus.com/downloads/httpd-2.4.18-x64-vc11-r3.zip?"
 #downloadurl = "http://dlsw.baidu.com/sw-search-sp/soft/ca/13442/Thunder_dl_7.9.43.5054.1456898740.exe?"
 
 #downloadurl = "http://tenet.dl.sourceforge.net/project/mingw-w64/mingw-w64/mingw-w64-release/mingw-w64-v4.0.6.zip?"
 
 
-#downloadurl="https://atlas.hashicorp.com/laravel/boxes/homestead/versions/0.4.2/providers/virtualbox.box?"
+downloadurl="https://atlas.hashicorp.com/laravel/boxes/homestead/versions/0.4.2/providers/virtualbox.box?"
 
 
 
@@ -100,14 +99,16 @@ N_THREADS = 20
 
 # check if partial content is supported
 if not is_partial_supp(downloadurl):
-    print('partial content is not supported, do you want to change N_THREADS to only one?')
+#    print('partial content is not supported, do you want to change N_THREADS to only one?')
+#    sys.stdout.flush()
+#    answer = raw_input('')
+#    if answer == 'yes':
+    print('partial content is not supported, switching to single thread...')
     sys.stdout.flush()
-    answer = raw_input('')
-    if answer == 'yes':
-        N_THREADS = 1
-    else:
-        print 'quiting ...'
-        exit(0)
+    N_THREADS = 1
+#    else:
+#        print 'quiting ...'
+#        exit(0)
 
     
 
