@@ -87,6 +87,7 @@ def is_partial_supp(downloadurl):
 
 downloadurl="https://atlas.hashicorp.com/laravel/boxes/homestead/versions/0.4.2/providers/virtualbox.box?"
 
+downloadurl="https://bvdl.s3-eu-west-1.amazonaws.com/BvSshClient-Inst.exe?"
 
 
 print('download from: ' + downloadurl)
@@ -114,6 +115,7 @@ if not is_partial_supp(downloadurl):
 
 
 print('number of threads: ' + str(N_THREADS))
+sys.stdout.flush()
 
 filesize = int(get_remote_filesize(downloadurl))
 total_sz = filesize
@@ -122,6 +124,7 @@ with open(savefile, 'wb') as fo:
     fo.seek(filesize - 1)
     fo.write('\0')
 print ('filesize: '+ str(os.stat(savefile).st_size))
+sys.stdout.flush()
 
 filesizeeach = filesize // N_THREADS
 
@@ -133,6 +136,7 @@ else:
 
 print('filesize each: ' + str(filesizeeach))
 print('lastfilesize: ' + str(lastfilesize));
+sys.stdout.flush()
 
 sys.stdout.flush()
 
@@ -162,3 +166,4 @@ for thread in threads:
 
 
 print "all over"
+sys.stdout.flush()
